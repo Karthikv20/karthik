@@ -1,0 +1,114 @@
+import tkinter as tk
+from tkinter import ttk, messagebox
+import random
+import string
+
+
+class PasswordGeneratorApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Password Generator")
+        self.root.geometry("400x350")
+        self.root.resizable(False, False)
+
+        self.style = ttk.Style()
+        self.style.configure('TFrame', background='#f0f0f0')
+        self.style.configure('TLabel', background='#f0f0f0', font=('Arial', 10))
+        self.style.configure('TButton', font=('Arial', 10))
+        self.style.configure('Header.TLabel', font=('Arial', 14, 'bold'))
+        
+        self.create_widgets()
+    
+    def create_widgets(self):
+        
+        main_frame = ttk.Frame(self.root, padding="10")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+        
+      
+        header = ttk.Label(main_frame, text="Password Generator", style='Header.TLabel')
+        header.grid(row=0, column=0, columnspan=2, pady=10)
+        
+       
+        ttk.Label(main_frame, text="Password Length:").grid(row=1, column=0, sticky=tk.W, pady=5)
+        self.length_var = tk.IntVar(value=12)
+        self.length_spin = ttk.Spinbox(main_frame, from_=8, to=50, textvariable=self.length_var, width=5)
+        self.length_spin.grid(row=1, column=1, sticky=tk.W, pady=5)
+        
+        
+        ttk.Label(main_frame, text="Include:").grid(row=2, column=0, sticky=tk.W, pady=5)
+        
+        
+        self.lower_var = tk.BooleanVar(value=True)
+        self.upper_var = tk.BooleanVar(value=True)
+        self.digits_var = tk.BooleanVar(value=True)
+        self.symbols_var = tk.BooleanVar(value=True)
+        
+        lower_check = ttk.Checkbutton(main_frame, text="Lowercase (a-z)", variable=self.lower_var)
+        upper_check = ttk.Checkbutton(main_frame, text="Uppercase (A-Z)", variable=self.upper_var)
+        digits_check = ttk.Checkbutton(main_frame, text="Digits (0-9)", variable=self.digits_var)
+        symbols_check = ttk.Checkbutton(main_frame, text="Symbols (!@#...)", variable=self.symbols_var)
+        
+        lower_check.grid(row=3, column=0, columnspan=2, sticky=tk.W, pady=2)
+        upper_check.grid(row=4, column=0, columnspan=2, sticky=tk.W, pady=2)
+        digits_check.grid(row=5, column=0, columnspan=2, sticky=tk.W, pady=2)
+        symbols_check.grid(row=6, column=0, columnspan=2, sticky=tk.W, pady=2)
+        
+        
+        generate_btn = ttk.Button(main_frame, text="Generate Password", command=self.generate_password)
+        generate_btn.grid(row=7, column=0, columnspan=2, pady=15)
+        
+        
+        ttk.Label(main_frame, text="Generated Password:").grid(row=8, column=0, sticky=tk.W, pady=5)
+        self.password_var = tk.StringVar()
+        password_entry = ttk.Entry(main_frame, textvariable=self.password_var, state='readonly', font=('Arial', 10), width=30)
+        password_entry.grid(row=8, column=1, sticky=tk.W, pady=5)
+        
+        
+        copy_btn = ttk.Button(main_frame, text="Copy to Clipboard", command=self.copy_to_clipboard)
+        copy_btn.grid(row=9, column=0, columnspan=2, pady=5)
+    
+    def generate_password(self):
+        
+        if not (self.lower_var.get() or self.upper_var.get() or self.digits_var.get() or self.symbols_var.get()):
+            messagebox.showerror("Error", "Please select at least one character type")
+            return
+        
+        length = self.length_var.get()
+        
+       
+        char_sets = []
+        if self.lower_var.get():
+            char_sets.append(string.ascii_lowercase)
+        if self.upper_var.get():
+            char_sets.append(string.ascii_uppercase)
+        if self.digits_var.get():
+            char_sets.append(string.digits)
+        if self.symbols_var.get():
+            char_sets.append(string.punctuation)
+        
+        
+        password = [random.choice(char_set) for char_set in char_sets]
+        
+        
+        all_chars = ''.join(char_sets)
+        password += [random.choice(all_chars) for _ in range(length - len(password))]
+        
+        
+        random.shuffle(password)
+        
+       
+        password_str = ''.join(password)
+        self.password_var.set(password_str)
+    
+    def copy_to_clipboard(self):
+        password = self.password_var.get()
+        if password:
+            pyperclip.copy(password)
+            messagebox.showinfo("Success", "Password copied to clipboard!")
+        else:
+            messagebox.showwarning("Warning", "No password to copy")
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = PasswordGeneratorApp(root)
+    root.mainloop()
